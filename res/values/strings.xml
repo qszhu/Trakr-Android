@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Trakr</string>
+    <string name="action_refresh">refresh</string>
+    <string name="title_tasks">Tasks</string>
+    <string name="title_plans">Plans</string>
+
+</resources>
