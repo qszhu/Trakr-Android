@@ -1,6 +1,8 @@
 
 package qszhu.trakr;
 
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.app.ListFragment;
 import android.content.Context;
 import android.os.Bundle;
@@ -67,7 +69,14 @@ public class ProgressListFragment extends ListFragment implements OnQueryLoadLis
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-        super.onListItemClick(l, v, position, id);
+        ParseObject progress = mAdapter.getItem(position);
+        String progressId = progress.getObjectId();
+        Fragment frag = ProgressDetailFragment.newInstance(progressId);
+        getFragmentManager().beginTransaction()
+                .replace(android.R.id.content, frag)
+                .addToBackStack("progress detail")
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                .commit();
     }
 
     @Override
