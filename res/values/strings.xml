@@ -3,7 +3,7 @@
 
     <string name="app_name">Trakr</string>
     <string name="action_refresh">refresh</string>
-    <string name="title_tasks">Tasks</string>
-    <string name="title_plans">Plans</string>
+    <string name="title_task">Task</string>
+    <string name="title_progress">Progress</string>
 
 </resources>
