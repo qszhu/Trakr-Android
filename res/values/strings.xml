@@ -2,8 +2,10 @@
 <resources>
 
     <string name="app_name">Trakr</string>
-    <string name="action_refresh">refresh</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="action_add">Add</string>
     <string name="title_task">Task</string>
     <string name="title_progress">Progress</string>
+    <string name="title_select_plan">Select plan</string>
 
 </resources>

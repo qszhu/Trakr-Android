@@ -2,8 +2,6 @@
 package qszhu.trakr;
 
 import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.app.ListFragment;
 import android.content.Context;
 import android.content.Intent;
@@ -19,23 +17,20 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseQueryAdapter;
 import com.parse.ParseQueryAdapter.OnQueryLoadListener;
-import com.parse.ParseUser;
-import com.parse.SaveCallback;
 
-import java.util.Date;
 import java.util.List;
 
-public class ProgressListFragment extends ListFragment implements OnQueryLoadListener<ParseObject> {
+public class SelectPlanFragment extends ListFragment implements OnQueryLoadListener<ParseObject> {
 
-    private static final String TAG = ProgressListFragment.class.getCanonicalName();
-    private static final int REQ_SELECT_PLAN = 1000;
+    private static final String TAG = SelectPlanFragment.class.getCanonicalName();
 
-    private ProgressAdapter mAdapter;
+    private static final int REQ_CREATE_PLAN = 1000;
+
+    private PlanAdapter mAdapter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -47,7 +42,7 @@ public class ProgressListFragment extends ListFragment implements OnQueryLoadLis
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        mAdapter = new ProgressAdapter(getActivity());
+        mAdapter = new PlanAdapter(getActivity());
         mAdapter.addOnQueryLoadListener(this);
 
         setListAdapter(mAdapter);
@@ -69,8 +64,10 @@ public class ProgressListFragment extends ListFragment implements OnQueryLoadLis
                 mAdapter.loadObjects();
                 return true;
             case R.id.action_add:
-                Intent intent = new Intent(getActivity(), SelectPlanActivity.class);
-                startActivityForResult(intent, REQ_SELECT_PLAN);
+                // TODO: create plan activity
+                // Intent intent = new Intent(getActivity(),
+                // SelectPlanActivity.class);
+                // startActivityForResult(intent, REQ_SELECT_TARGET);
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -82,23 +79,7 @@ public class ProgressListFragment extends ListFragment implements OnQueryLoadLis
             return;
         }
         switch (requestCode) {
-            case REQ_SELECT_PLAN:
-                String planId = data.getStringExtra(SelectPlanActivity.EXTRA_PLAN_ID);
-                ParseObject progress = new ParseObject("Progress");
-                progress.put("creator", ParseUser.getCurrentUser());
-                progress.put("plan", ParseObject.createWithoutData("Plan", planId));
-                progress.put("startDate", new Date());
-                progress.saveInBackground(new SaveCallback() {
-                    @Override
-                    public void done(ParseException e) {
-                        if (e != null) {
-                            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_LONG).show();
-                            return;
-                        }
-                        setListShown(false);
-                        mAdapter.loadObjects();
-                    }
-                });
+            case REQ_CREATE_PLAN:
                 break;
             default:
                 super.onActivityResult(requestCode, resultCode, data);
@@ -107,14 +88,15 @@ public class ProgressListFragment extends ListFragment implements OnQueryLoadLis
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-        ParseObject progress = mAdapter.getItem(position);
-        String progressId = progress.getObjectId();
-        Fragment frag = ProgressDetailFragment.newInstance(progressId);
-        getFragmentManager().beginTransaction()
-                .replace(android.R.id.content, frag)
-                .addToBackStack("progress detail")
-                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                .commit();
+        ParseObject plan = mAdapter.getItem(position);
+        String planId = plan.getObjectId();
+
+        Intent data = new Intent();
+        data.putExtra(SelectPlanActivity.EXTRA_PLAN_ID, planId);
+
+        final Activity activity = getActivity();
+        activity.setResult(Activity.RESULT_OK, data);
+        activity.finish();
     }
 
     @Override
@@ -131,25 +113,20 @@ public class ProgressListFragment extends ListFragment implements OnQueryLoadLis
         }
     }
 
-    private static class ProgressAdapter extends ParseQueryAdapter<ParseObject> {
+    private static class PlanAdapter extends ParseQueryAdapter<ParseObject> {
 
         private static final QueryFactory<ParseObject> QUERY_FACTORY = new QueryFactory<ParseObject>() {
 
             @Override
             public ParseQuery<ParseObject> create() {
-                ParseQuery<ParseObject> query = new ParseQuery<ParseObject>("Progress");
-                ParseUser user = ParseUser.getCurrentUser();
-                if (user != null) {
-                    query.whereEqualTo("creator", user);
-                }
-                query.include("plan");
-                query.include("plan.target");
+                ParseQuery<ParseObject> query = new ParseQuery<ParseObject>("Plan");
+                query.include("target");
                 return query;
             }
 
         };
 
-        public ProgressAdapter(Context context) {
+        public PlanAdapter(Context context) {
             super(context, QUERY_FACTORY);
         }
 
@@ -163,22 +140,18 @@ public class ProgressListFragment extends ListFragment implements OnQueryLoadLis
             TextView text1 = (TextView) v.findViewById(R.id.text1);
             TextView text2 = (TextView) v.findViewById(R.id.text2);
 
-            ParseObject plan = object.getParseObject("plan");
-            ParseObject target = plan.getParseObject("target");
+            ParseObject target = object.getParseObject("target");
             String name = target.getString("name");
 
-            List<Object> completions = object.getList("completions");
-            int numCompletions = completions == null ? 0 : completions.size();
-
-            List<Object> tasks = plan.getList("tasks");
+            List<Object> tasks = object.getList("tasks");
             int numTasks = tasks == null ? 0 : tasks.size();
 
             text1.setText(name);
-            text2.setText(String.format("%d/%d tasks", numCompletions, numTasks));
-
+            if (numTasks > 0) {
+                text2.setText(String.format("%d tasks", numTasks));
+            }
             return v;
         }
 
     }
-
 }

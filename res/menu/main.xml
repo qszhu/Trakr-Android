@@ -6,4 +6,9 @@
         android:showAsAction="ifRoom"
         android:title="@string/action_refresh"/>
 
+    <item
+        android:id="@+id/action_add"
+        android:icon="@drawable/ic_action_add"
+        android:showAsAction="ifRoom"
+        android:title="@string/action_add"/>
 </menu>
