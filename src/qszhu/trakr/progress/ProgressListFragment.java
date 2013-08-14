@@ -1,10 +1,11 @@
 
-package qszhu.trakr;
+package qszhu.trakr.progress;
 
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.ListFragment;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -17,20 +18,23 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.parse.ParseException;
-import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseQueryAdapter;
 import com.parse.ParseQueryAdapter.OnQueryLoadListener;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
-import java.util.Date;
+import qszhu.trakr.R;
+import qszhu.trakr.Utils;
+import qszhu.trakr.plan.SelectPlanActivity;
+import qszhu.trakr.task.Completion;
+import qszhu.trakr.task.Task;
+
 import java.util.List;
 
-public class ProgressListFragment extends ListFragment implements OnQueryLoadListener<ParseObject> {
+public class ProgressListFragment extends ListFragment implements OnQueryLoadListener<Progress> {
 
     private static final String TAG = ProgressListFragment.class.getCanonicalName();
     private static final int REQ_SELECT_PLAN = 1000;
@@ -47,7 +51,10 @@ public class ProgressListFragment extends ListFragment implements OnQueryLoadLis
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        mAdapter = new ProgressAdapter(getActivity());
+        final Activity activity = getActivity();
+        activity.setTitle(R.string.title_my_progress);
+
+        mAdapter = new ProgressAdapter(activity);
         mAdapter.addOnQueryLoadListener(this);
 
         setListAdapter(mAdapter);
@@ -78,21 +85,30 @@ public class ProgressListFragment extends ListFragment implements OnQueryLoadLis
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode != Activity.RESULT_OK) {
-            return;
-        }
+        final Activity activity = getActivity();
         switch (requestCode) {
             case REQ_SELECT_PLAN:
+                if (resultCode != Activity.RESULT_OK) {
+                    return;
+                }
+
                 String planId = data.getStringExtra(SelectPlanActivity.EXTRA_PLAN_ID);
-                ParseObject progress = new ParseObject("Progress");
-                progress.put("creator", ParseUser.getCurrentUser());
-                progress.put("plan", ParseObject.createWithoutData("Plan", planId));
-                progress.put("startDate", new Date());
+                Progress progress = new Progress().setPlan(planId);
+
+                int error = progress.getValidationError();
+                if (error != 0) {
+                    Utils.showErrorDialog(activity, error);
+                    return;
+                }
+
+                final ProgressDialog dialog = ProgressDialog.show(activity, null,
+                        activity.getString(R.string.create_progress_progress), true);
                 progress.saveInBackground(new SaveCallback() {
                     @Override
                     public void done(ParseException e) {
+                        dialog.dismiss();
                         if (e != null) {
-                            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_LONG).show();
+                            Utils.showErrorDialog(activity, e.getMessage());
                             return;
                         }
                         setListShown(false);
@@ -107,7 +123,7 @@ public class ProgressListFragment extends ListFragment implements OnQueryLoadLis
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-        ParseObject progress = mAdapter.getItem(position);
+        Progress progress = mAdapter.getItem(position);
         String progressId = progress.getObjectId();
         Fragment frag = ProgressDetailFragment.newInstance(progressId);
         getFragmentManager().beginTransaction()
@@ -123,21 +139,23 @@ public class ProgressListFragment extends ListFragment implements OnQueryLoadLis
     }
 
     @Override
-    public void onLoaded(List<ParseObject> objects, Exception e) {
+    public void onLoaded(List<Progress> objects, Exception e) {
         Log.d(TAG, "loaded");
-        setListShown(true);
+        if (isVisible()) {
+            setListShown(true);
+        }
         if (e != null) {
-            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_LONG).show();
+            Utils.showErrorDialog(null, e.getMessage());
         }
     }
 
-    private static class ProgressAdapter extends ParseQueryAdapter<ParseObject> {
+    private static class ProgressAdapter extends ParseQueryAdapter<Progress> {
 
-        private static final QueryFactory<ParseObject> QUERY_FACTORY = new QueryFactory<ParseObject>() {
+        private static final QueryFactory<Progress> QUERY_FACTORY = new QueryFactory<Progress>() {
 
             @Override
-            public ParseQuery<ParseObject> create() {
-                ParseQuery<ParseObject> query = new ParseQuery<ParseObject>("Progress");
+            public ParseQuery<Progress> create() {
+                ParseQuery<Progress> query = ParseQuery.getQuery(Progress.class);
                 ParseUser user = ParseUser.getCurrentUser();
                 if (user != null) {
                     query.whereEqualTo("creator", user);
@@ -154,7 +172,7 @@ public class ProgressListFragment extends ListFragment implements OnQueryLoadLis
         }
 
         @Override
-        public View getItemView(ParseObject object, View v, ViewGroup parent) {
+        public View getItemView(Progress progress, View v, ViewGroup parent) {
             if (v == null) {
                 v = LayoutInflater.from(getContext())
                         .inflate(R.layout.simple_list_item_2, parent, false);
@@ -163,14 +181,12 @@ public class ProgressListFragment extends ListFragment implements OnQueryLoadLis
             TextView text1 = (TextView) v.findViewById(R.id.text1);
             TextView text2 = (TextView) v.findViewById(R.id.text2);
 
-            ParseObject plan = object.getParseObject("plan");
-            ParseObject target = plan.getParseObject("target");
-            String name = target.getString("name");
+            String name = progress.getPlan().getTarget().getName();
 
-            List<Object> completions = object.getList("completions");
+            List<Completion> completions = progress.getCompletions();
             int numCompletions = completions == null ? 0 : completions.size();
 
-            List<Object> tasks = plan.getList("tasks");
+            List<Task> tasks = progress.getPlan().getTasks();
             int numTasks = tasks == null ? 0 : tasks.size();
 
             text1.setText(name);

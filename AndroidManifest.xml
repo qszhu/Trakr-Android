@@ -26,7 +26,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="qszhu.trakr.SelectPlanActivity" />
+        <activity android:name="qszhu.trakr.plan.SelectPlanActivity" />
+        <activity android:name="qszhu.trakr.target.SelectTargetActivity" />
         <activity android:name="qszhu.parse.login.LoginActivity" />
     </application>
 

@@ -13,6 +13,8 @@ import com.parse.ParseAnalytics;
 import com.parse.ParseUser;
 
 import qszhu.parse.login.LoginActivity;
+import qszhu.trakr.progress.ProgressListFragment;
+import qszhu.trakr.task.TaskListFragment;
 
 public class MainActivity extends Activity {
 

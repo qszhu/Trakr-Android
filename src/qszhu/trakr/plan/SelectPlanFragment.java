@@ -1,10 +1,9 @@
 
-package qszhu.trakr;
+package qszhu.trakr.plan;
 
-import android.app.Activity;
+import android.app.FragmentTransaction;
 import android.app.ListFragment;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,20 +14,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseQueryAdapter;
 import com.parse.ParseQueryAdapter.OnQueryLoadListener;
 
+import qszhu.trakr.R;
+import qszhu.trakr.Utils;
+import qszhu.trakr.task.Task;
+
 import java.util.List;
 
-public class SelectPlanFragment extends ListFragment implements OnQueryLoadListener<ParseObject> {
+public class SelectPlanFragment extends ListFragment implements OnQueryLoadListener<Plan> {
 
     private static final String TAG = SelectPlanFragment.class.getCanonicalName();
-
-    private static final int REQ_CREATE_PLAN = 1000;
 
     private PlanAdapter mAdapter;
 
@@ -41,6 +40,8 @@ public class SelectPlanFragment extends ListFragment implements OnQueryLoadListe
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        getActivity().setTitle(R.string.title_select_plan);
 
         mAdapter = new PlanAdapter(getActivity());
         mAdapter.addOnQueryLoadListener(this);
@@ -64,39 +65,21 @@ public class SelectPlanFragment extends ListFragment implements OnQueryLoadListe
                 mAdapter.loadObjects();
                 return true;
             case R.id.action_add:
-                // TODO: create plan activity
-                // Intent intent = new Intent(getActivity(),
-                // SelectPlanActivity.class);
-                // startActivityForResult(intent, REQ_SELECT_TARGET);
+                getFragmentManager().beginTransaction()
+                        .replace(android.R.id.content, new CreatePlanFragment())
+                        .addToBackStack("create plan")
+                        .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                        .commit();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode != Activity.RESULT_OK) {
-            return;
-        }
-        switch (requestCode) {
-            case REQ_CREATE_PLAN:
-                break;
-            default:
-                super.onActivityResult(requestCode, resultCode, data);
-        }
-    }
-
-    @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-        ParseObject plan = mAdapter.getItem(position);
-        String planId = plan.getObjectId();
-
-        Intent data = new Intent();
-        data.putExtra(SelectPlanActivity.EXTRA_PLAN_ID, planId);
-
-        final Activity activity = getActivity();
-        activity.setResult(Activity.RESULT_OK, data);
-        activity.finish();
+        Plan plan = mAdapter.getItem(position);
+        SelectPlanActivity.planSelected(getActivity(), plan);
     }
 
     @Override
@@ -105,21 +88,23 @@ public class SelectPlanFragment extends ListFragment implements OnQueryLoadListe
     }
 
     @Override
-    public void onLoaded(List<ParseObject> objects, Exception e) {
+    public void onLoaded(List<Plan> objects, Exception e) {
         Log.d(TAG, "loaded");
-        setListShown(true);
+        if (isVisible()) {
+            setListShown(true);
+        }
         if (e != null) {
-            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_LONG).show();
+            Utils.showErrorDialog(getActivity(), e.getMessage());
         }
     }
 
-    private static class PlanAdapter extends ParseQueryAdapter<ParseObject> {
+    private static class PlanAdapter extends ParseQueryAdapter<Plan> {
 
-        private static final QueryFactory<ParseObject> QUERY_FACTORY = new QueryFactory<ParseObject>() {
+        private static final QueryFactory<Plan> QUERY_FACTORY = new QueryFactory<Plan>() {
 
             @Override
-            public ParseQuery<ParseObject> create() {
-                ParseQuery<ParseObject> query = new ParseQuery<ParseObject>("Plan");
+            public ParseQuery<Plan> create() {
+                ParseQuery<Plan> query = ParseQuery.getQuery(Plan.class);
                 query.include("target");
                 return query;
             }
@@ -131,7 +116,7 @@ public class SelectPlanFragment extends ListFragment implements OnQueryLoadListe
         }
 
         @Override
-        public View getItemView(ParseObject object, View v, ViewGroup parent) {
+        public View getItemView(Plan plan, View v, ViewGroup parent) {
             if (v == null) {
                 v = LayoutInflater.from(getContext())
                         .inflate(R.layout.simple_list_item_2, parent, false);
@@ -140,10 +125,9 @@ public class SelectPlanFragment extends ListFragment implements OnQueryLoadListe
             TextView text1 = (TextView) v.findViewById(R.id.text1);
             TextView text2 = (TextView) v.findViewById(R.id.text2);
 
-            ParseObject target = object.getParseObject("target");
-            String name = target.getString("name");
+            String name = plan.getTarget().getName();
 
-            List<Object> tasks = object.getList("tasks");
+            List<Task> tasks = plan.getTasks();
             int numTasks = tasks == null ? 0 : tasks.size();
 
             text1.setText(name);

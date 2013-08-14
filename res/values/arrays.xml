@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="units_array">
+        <item>@string/unit_chapter</item>
+        <item>@string/unit_page</item>
+    </string-array>
+    <string-array name="repeats_array">
+        <item>@string/repeat_day</item>
+        <item>@string/repeat_week</item>
+        <item>@string/repeat_month</item>
+    </string-array>
+
+</resources>
