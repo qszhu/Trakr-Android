@@ -2,6 +2,7 @@
 package qszhu.trakr.task;
 
 import android.app.ListFragment;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.AsyncTask;
@@ -13,15 +14,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
-
-import org.joda.time.DateTime;
-import org.joda.time.Days;
 
 import qszhu.trakr.R;
 import qszhu.trakr.Utils;
@@ -46,7 +45,11 @@ public class TaskListFragment extends ListFragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         getActivity().setTitle(R.string.title_my_tasks);
+    }
 
+    @Override
+    public void onResume() {
+        super.onResume();
         refresh();
     }
 
@@ -64,6 +67,18 @@ public class TaskListFragment extends ListFragment {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    public void onListItemClick(ListView l, View v, int position, long id) {
+        Todo todo = (Todo) l.getAdapter().getItem(position);
+        Intent intent = new Intent(getActivity(), TaskTimerActivity.class);
+        intent.putExtra(TaskTimerActivity.EXTRA_TARGET_NAME,
+                todo.progress.getPlan().getTarget().getName());
+        intent.putExtra(TaskTimerActivity.EXTRA_TASK_NAME, todo.task.getName());
+        intent.putExtra(TaskTimerActivity.EXTRA_TASK_ID, todo.task.getObjectId());
+        intent.putExtra(TaskTimerActivity.EXTRA_PROGRESS_ID, todo.progress.getObjectId());
+        startActivity(intent);
     }
 
     private void refresh() {
@@ -141,6 +156,9 @@ public class TaskListFragment extends ListFragment {
 
         @Override
         protected void onPostExecute(List<Todo> result) {
+            if (isVisible()) {
+                setListShown(true);
+            }
             setListAdapter(new TodoAdapter(result));
         }
 
@@ -170,6 +188,11 @@ public class TaskListFragment extends ListFragment {
         }
 
         @Override
+        public boolean isEnabled(int position) {
+            return !mTodos.get(position).isCompleted();
+        }
+
+        @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             View view = convertView;
             if (view == null) {
@@ -177,8 +200,15 @@ public class TaskListFragment extends ListFragment {
                         .inflate(R.layout.simple_list_item_2, parent, false);
             }
 
+            int textColor = getActivity().getResources()
+                    .getColor(android.R.color.primary_text_light);
             TextView text1 = (TextView) view.findViewById(R.id.text1);
+            text1.setTextColor(textColor);
             TextView text2 = (TextView) view.findViewById(R.id.text2);
+            text2.setTextColor(textColor);
+
+            text1.setPaintFlags(text1.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
+            text2.setPaintFlags(text2.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
 
             Todo todo = mTodos.get(position);
             text1.setText(todo.progress.getPlan().getTarget().getName());
@@ -206,41 +236,11 @@ public class TaskListFragment extends ListFragment {
                     color = Color.LTGRAY;
                     break;
             }
-            text1.setTextColor(color);
+            if (!todo.isCompleted()) {
+                text1.setTextColor(color);
+            }
 
             return view;
-        }
-    }
-
-    private enum TodoType {
-        LATE, TODAY, TOMORROW, FUTURE
-    }
-
-    private static class Todo {
-        public Progress progress;
-        public Task task;
-        public Completion completion;
-
-        public Date getDate() {
-            return task.getDate(progress.getStartDate());
-        }
-
-        public boolean isCompleted() {
-            return completion != null;
-        }
-
-        public TodoType getType() {
-            int days = Days.daysBetween(new DateTime(), new DateTime(getDate())).getDays();
-            if (days < 0) {
-                return TodoType.LATE;
-            }
-            if (days == 0) {
-                return TodoType.TODAY;
-            }
-            if (days == 1) {
-                return TodoType.TOMORROW;
-            }
-            return TodoType.FUTURE;
         }
     }
 

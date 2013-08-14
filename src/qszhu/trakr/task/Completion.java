@@ -37,8 +37,13 @@ public class Completion extends ParseObject {
         return (Task) getParseObject(COL_TASK);
     }
 
-    public Completion getTask(Task task) {
+    public Completion setTask(Task task) {
         put(COL_TASK, task);
+        return this;
+    }
+
+    public Completion setTask(String taskId) {
+        put(COL_TASK, ParseObject.createWithoutData(Task.class, taskId));
         return this;
     }
 
