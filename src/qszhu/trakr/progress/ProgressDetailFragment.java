@@ -16,6 +16,7 @@ import com.parse.ParseQuery;
 
 import qszhu.trakr.R;
 import qszhu.trakr.Utils;
+import qszhu.trakr.plan.Plan;
 import qszhu.trakr.task.Task;
 
 import java.util.Calendar;
@@ -47,7 +48,7 @@ public class ProgressDetailFragment extends ListFragment {
 
         ParseQuery<Progress> query = ParseQuery.getQuery(Progress.class);
         query.whereEqualTo("objectId", getArguments().getString(ARG_OBJECT_ID));
-        query.include("plan.tasks");
+        query.include(Progress.COL_PLAN + "." + Plan.COL_TASKS);
         query.findInBackground(new FindCallback<Progress>() {
 
             @Override

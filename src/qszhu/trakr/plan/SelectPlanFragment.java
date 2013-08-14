@@ -105,7 +105,7 @@ public class SelectPlanFragment extends ListFragment implements OnQueryLoadListe
             @Override
             public ParseQuery<Plan> create() {
                 ParseQuery<Plan> query = ParseQuery.getQuery(Plan.class);
-                query.include("target");
+                query.include(Plan.COL_TARGET);
                 return query;
             }
 

@@ -28,6 +28,7 @@ import com.parse.SaveCallback;
 
 import qszhu.trakr.R;
 import qszhu.trakr.Utils;
+import qszhu.trakr.plan.Plan;
 import qszhu.trakr.plan.SelectPlanActivity;
 import qszhu.trakr.task.Completion;
 import qszhu.trakr.task.Task;
@@ -158,10 +159,10 @@ public class ProgressListFragment extends ListFragment implements OnQueryLoadLis
                 ParseQuery<Progress> query = ParseQuery.getQuery(Progress.class);
                 ParseUser user = ParseUser.getCurrentUser();
                 if (user != null) {
-                    query.whereEqualTo("creator", user);
+                    query.whereEqualTo(Progress.COL_CREATOR, user);
                 }
-                query.include("plan");
-                query.include("plan.target");
+                query.include(Progress.COL_PLAN);
+                query.include(Progress.COL_PLAN + "." + Plan.COL_TARGET);
                 return query;
             }
 

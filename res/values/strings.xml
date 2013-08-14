@@ -40,5 +40,6 @@
     <string name="error_non_positive_num_tasks">Num of tasks must be positive.</string>
     <string name="error_invalid_repeat">Invalid repeat mode.</string>
     <string name="error_missing_plan">Plan is required.</string>
+    <string name="error_negative_cost">Cost must be positive.</string>
 
 </resources>

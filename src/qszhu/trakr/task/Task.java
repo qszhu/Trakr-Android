@@ -4,6 +4,9 @@ package qszhu.trakr.task;
 import com.parse.ParseClassName;
 import com.parse.ParseObject;
 
+import java.util.Calendar;
+import java.util.Date;
+
 @ParseClassName("Task")
 public class Task extends ParseObject {
 
@@ -27,6 +30,13 @@ public class Task extends ParseObject {
     public Task setOffset(int offset) {
         put(COL_OFFSET, offset);
         return this;
+    }
+
+    public Date getDate(Date startDate) {
+        Calendar c = Calendar.getInstance();
+        c.setTime(startDate);
+        c.add(Calendar.DATE, getOffset());
+        return c.getTime();
     }
 
     public int getStep() {
