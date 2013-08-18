@@ -25,6 +25,7 @@ import com.parse.ParseQueryAdapter;
 import com.parse.ParseQueryAdapter.OnQueryLoadListener;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
+import com.testflightapp.lib.TestFlight;
 
 import qszhu.trakr.R;
 import qszhu.trakr.Utils;
@@ -64,6 +65,13 @@ public class ProgressListFragment extends ListFragment implements OnQueryLoadLis
     }
 
     @Override
+    public void onResume() {
+        TestFlight.passCheckpoint("progress list resume");
+
+        super.onResume();
+    }
+
+    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.main, menu);
     }
@@ -72,11 +80,15 @@ public class ProgressListFragment extends ListFragment implements OnQueryLoadLis
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_refresh:
+                TestFlight.passCheckpoint("click refresh");
+
                 Log.d(TAG, "refresh");
                 setListShown(false);
                 mAdapter.loadObjects();
                 return true;
             case R.id.action_add:
+                TestFlight.passCheckpoint("click add");
+
                 Intent intent = new Intent(getActivity(), SelectPlanActivity.class);
                 startActivityForResult(intent, REQ_SELECT_PLAN);
             default:
@@ -124,6 +136,8 @@ public class ProgressListFragment extends ListFragment implements OnQueryLoadLis
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
+        TestFlight.passCheckpoint("click progress");
+
         Progress progress = mAdapter.getItem(position);
         String progressId = progress.getObjectId();
         Fragment frag = ProgressDetailFragment.newInstance(progressId);

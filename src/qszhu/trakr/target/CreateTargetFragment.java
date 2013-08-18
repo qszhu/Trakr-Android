@@ -13,6 +13,7 @@ import android.widget.EditText;
 
 import com.parse.ParseException;
 import com.parse.SaveCallback;
+import com.testflightapp.lib.TestFlight;
 
 import qszhu.trakr.R;
 import qszhu.trakr.Utils;
@@ -41,7 +42,16 @@ public class CreateTargetFragment extends Fragment implements OnClickListener {
     }
 
     @Override
+    public void onResume() {
+        TestFlight.passCheckpoint("create target resume");
+
+        super.onResume();
+    }
+
+    @Override
     public void onClick(View v) {
+        TestFlight.passCheckpoint("click create");
+
         final Activity activity = getActivity();
 
         final Target target = new Target()

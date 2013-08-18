@@ -13,6 +13,7 @@ import android.widget.TextView;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseQuery;
+import com.testflightapp.lib.TestFlight;
 
 import qszhu.trakr.R;
 import qszhu.trakr.Utils;
@@ -65,6 +66,13 @@ public class ProgressDetailFragment extends ListFragment {
             }
 
         });
+    }
+
+    @Override
+    public void onResume() {
+        TestFlight.passCheckpoint("progress detail resume");
+
+        super.onResume();
     }
 
     private class TaskAdapter extends BaseAdapter {

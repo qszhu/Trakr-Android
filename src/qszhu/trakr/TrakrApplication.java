@@ -6,6 +6,7 @@ import android.app.Application;
 import com.parse.Parse;
 import com.parse.ParseACL;
 import com.parse.ParseObject;
+import com.testflightapp.lib.TestFlight;
 
 import qszhu.trakr.plan.Plan;
 import qszhu.trakr.progress.Progress;
@@ -18,6 +19,8 @@ public class TrakrApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        TestFlight.takeOff(this, getString(R.string.testflight_app_token));
 
         parseInit();
     }

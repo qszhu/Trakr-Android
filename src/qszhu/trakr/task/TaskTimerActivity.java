@@ -14,6 +14,7 @@ import android.widget.TextView;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.SaveCallback;
+import com.testflightapp.lib.TestFlight;
 
 import qszhu.trakr.R;
 import qszhu.trakr.Utils;
@@ -61,16 +62,26 @@ public class TaskTimerActivity extends Activity implements OnClickListener {
     }
 
     @Override
+    protected void onResume() {
+        TestFlight.passCheckpoint("task timer resume");
+
+        super.onResume();
+    }
+
+    @Override
     public void onClick(View view) {
         if (view == mTimer) {
+            TestFlight.passCheckpoint("click timer");
             switchTimer();
             return;
         }
         if (view == mFinish) {
+            TestFlight.passCheckpoint("click finish");
             finishTimer();
             return;
         }
         if (view == mCancel) {
+            TestFlight.passCheckpoint("click cancel");
             cancelTimer();
             return;
         }
@@ -78,6 +89,7 @@ public class TaskTimerActivity extends Activity implements OnClickListener {
 
     @Override
     public void onBackPressed() {
+        TestFlight.passCheckpoint("back pressed");
         cancelTimer();
         super.onBackPressed();
     }

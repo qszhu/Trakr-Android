@@ -18,6 +18,7 @@ import android.widget.TextView;
 import com.parse.ParseQuery;
 import com.parse.ParseQueryAdapter;
 import com.parse.ParseQueryAdapter.OnQueryLoadListener;
+import com.testflightapp.lib.TestFlight;
 
 import qszhu.trakr.R;
 import qszhu.trakr.Utils;
@@ -52,6 +53,13 @@ public class SelectPlanFragment extends ListFragment implements OnQueryLoadListe
     }
 
     @Override
+    public void onResume() {
+        TestFlight.passCheckpoint("select plan resume");
+
+        super.onResume();
+    }
+
+    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.main, menu);
     }
@@ -60,11 +68,15 @@ public class SelectPlanFragment extends ListFragment implements OnQueryLoadListe
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_refresh:
+                TestFlight.passCheckpoint("click refresh");
+
                 Log.d(TAG, "refresh");
                 setListShown(false);
                 mAdapter.loadObjects();
                 return true;
             case R.id.action_add:
+                TestFlight.passCheckpoint("click add");
+
                 getFragmentManager().beginTransaction()
                         .replace(android.R.id.content, new CreatePlanFragment())
                         .addToBackStack("create plan")
@@ -78,6 +90,8 @@ public class SelectPlanFragment extends ListFragment implements OnQueryLoadListe
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
+        TestFlight.passCheckpoint("click plan");
+
         Plan plan = mAdapter.getItem(position);
         SelectPlanActivity.planSelected(getActivity(), plan);
     }

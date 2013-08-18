@@ -20,6 +20,7 @@ import android.widget.Spinner;
 
 import com.parse.ParseException;
 import com.parse.SaveCallback;
+import com.testflightapp.lib.TestFlight;
 
 import qszhu.trakr.AutoTask;
 import qszhu.trakr.R;
@@ -73,16 +74,29 @@ public class CreatePlanFragment extends Fragment implements OnClickListener, OnD
     }
 
     @Override
+    public void onResume() {
+        TestFlight.passCheckpoint("create plan resume");
+
+        super.onResume();
+    }
+
+    @Override
     public void onClick(View v) {
         if (v == mSelectTarget) {
+            TestFlight.passCheckpoint("click target");
+
             selectTarget();
             return;
         }
         if (v == mSelectDate) {
+            TestFlight.passCheckpoint("click date");
+
             showDatePicker();
             return;
         }
         if (v == mCreate) {
+            TestFlight.passCheckpoint("click create");
+
             savePlan();
             return;
         }

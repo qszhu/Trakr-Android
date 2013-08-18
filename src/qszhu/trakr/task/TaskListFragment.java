@@ -21,6 +21,7 @@ import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
+import com.testflightapp.lib.TestFlight;
 
 import qszhu.trakr.R;
 import qszhu.trakr.Utils;
@@ -49,6 +50,8 @@ public class TaskListFragment extends ListFragment {
 
     @Override
     public void onResume() {
+        TestFlight.passCheckpoint("task list resume");
+
         super.onResume();
         refresh();
     }
@@ -71,6 +74,8 @@ public class TaskListFragment extends ListFragment {
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
+        TestFlight.passCheckpoint("click todo");
+
         Todo todo = (Todo) l.getAdapter().getItem(position);
         Intent intent = new Intent(getActivity(), TaskTimerActivity.class);
         intent.putExtra(TaskTimerActivity.EXTRA_TARGET_NAME,
