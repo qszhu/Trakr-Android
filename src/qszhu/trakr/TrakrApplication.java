@@ -20,7 +20,7 @@ public class TrakrApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
-        TestFlight.takeOff(this, getString(R.string.testflight_app_token));
+        TestFlight.takeOff(this, "4625c43a-98e2-407f-9a71-018a8024d128");
 
         parseInit();
     }
