@@ -4,11 +4,12 @@ package qszhu.trakr.task;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.View.OnClickListener;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -30,6 +31,11 @@ public class TaskTimerActivity extends Activity implements OnClickListener {
 
     private static final int ONE_SECOND = 1000;
 
+    private static final String PREF_TIMER = "timer";
+    private static final String PREF_PROGRESS_ID = "pref_progress_id";
+    private static final String PREF_TASK_ID = "pref_task_id";
+    private static final String PREF_SECONDS = "pref_seconds";
+
     private Button mTimer, mFinish, mCancel;
     private TextView mTimerText;
     private int mSeconds;
@@ -50,6 +56,7 @@ public class TaskTimerActivity extends Activity implements OnClickListener {
         mProgressId = intent.getStringExtra(EXTRA_PROGRESS_ID);
         final String targetName = intent.getStringExtra(EXTRA_TARGET_NAME);
         final String taskName = intent.getStringExtra(EXTRA_TASK_NAME);
+        loadTimer();
 
         mTimer = (Button) findViewById(R.id.action_timer);
         mFinish = (Button) findViewById(R.id.action_finish);
@@ -94,7 +101,8 @@ public class TaskTimerActivity extends Activity implements OnClickListener {
     @Override
     public void onBackPressed() {
         TestFlight.passCheckpoint("back pressed");
-        cancelTimer();
+
+        pauseTimer();
         super.onBackPressed();
     }
 
@@ -154,7 +162,40 @@ public class TaskTimerActivity extends Activity implements OnClickListener {
 
     private void cancelTimer() {
         stopTimer();
+        clearTimer();
         finish();
+    }
+
+    private void saveTimer() {
+        getSharedPreferences(PREF_TIMER, MODE_PRIVATE).edit()
+                .putString(PREF_PROGRESS_ID, mProgressId)
+                .putString(PREF_TASK_ID, mTaskId)
+                .putInt(PREF_SECONDS, mSeconds)
+                .commit();
+    }
+
+    private void loadTimer() {
+        SharedPreferences pref = getSharedPreferences(PREF_TIMER, MODE_PRIVATE);
+        if (!pref.getString(PREF_PROGRESS_ID, "").equals(mProgressId)) {
+            return;
+        }
+        if (!pref.getString(PREF_TASK_ID, "").equals(mTaskId)) {
+            return;
+        }
+        mSeconds = pref.getInt(PREF_SECONDS, 0);
+    }
+
+    private void clearTimer() {
+        getSharedPreferences(PREF_TIMER, MODE_PRIVATE).edit()
+                .putString(PREF_PROGRESS_ID, "")
+                .putString(PREF_TASK_ID, "")
+                .putInt(PREF_SECONDS, 0)
+                .commit();
+    }
+
+    private void pauseTimer() {
+        stopTimer();
+        saveTimer();
     }
 
     private Runnable mTimerRunnable = new Runnable() {
