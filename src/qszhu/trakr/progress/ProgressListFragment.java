@@ -2,8 +2,6 @@
 package qszhu.trakr.progress;
 
 import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.app.ListFragment;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -139,13 +137,7 @@ public class ProgressListFragment extends ListFragment implements OnQueryLoadLis
         TestFlight.passCheckpoint("click progress");
 
         Progress progress = mAdapter.getItem(position);
-        String progressId = progress.getObjectId();
-        Fragment frag = ProgressDetailFragment.newInstance(progressId);
-        getFragmentManager().beginTransaction()
-                .replace(android.R.id.content, frag)
-                .addToBackStack("progress detail")
-                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                .commit();
+        startActivity(ProgressDetailActivity.getIntent(getActivity(), progress.getObjectId()));
     }
 
     @Override
