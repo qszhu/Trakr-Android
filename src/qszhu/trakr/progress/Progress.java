@@ -9,7 +9,6 @@ import qszhu.trakr.R;
 import qszhu.trakr.plan.Plan;
 import qszhu.trakr.task.Completion;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -54,11 +53,7 @@ public class Progress extends ParseObject {
     }
 
     public void addCompletion(Completion completion) {
-        List<Completion> orig = getCompletions();
-        ArrayList<Completion> completions = orig == null ? new ArrayList<Completion>()
-                : new ArrayList<Completion>(orig);
-        completions.add(completion);
-        setCompletions(completions);
+        add(COL_COMPLETIONS, completion);
     }
 
     public ParseUser getCreator() {
